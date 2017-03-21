@@ -37,6 +37,12 @@ public abstract class AbstractLineData implements LineData {
     protected abstract boolean readLine();
 
     protected Header[] createHeaders(String[] fields) {
+        if (fields[0].indexOf(".csv") != -1){
+            String firstLine = fields[0];
+            firstLine = firstLine.substring(firstLine.length() - 50, firstLine.length()).trim();
+            fields[0] = firstLine;
+        }
+        
         Header[] headers = new Header[fields.length];
         int i=0;
         for (String field : fields) {
