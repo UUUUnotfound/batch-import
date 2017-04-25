@@ -2,6 +2,9 @@
 
 ## Neo4j 2.2+ neo4j-import tool
 
+针对原始版本修复了导入.gz关系压缩文件时，win环境会出现关系无法导入的情况。
+具体使用步骤可参见本人博客：https://my.oschina.net/u/2538940/blog/883829
+
 Since version 2.2.0 Neo4j comes with an **high performance import tool** out of the box that takes many ideas of this one, but is way more scalable across CPUs and has little memory requirements.
 
 The only cases that are not covered are repeated imports in existing stores and population of manual indexes. Please consider the built-in and officially supported tool first, before falling back onto this one.
