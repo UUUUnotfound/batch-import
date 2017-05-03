@@ -93,14 +93,23 @@ public class Importer {
         final LineData data = createLineData(reader, 0);
         report.reset();
         boolean hasId = data.hasId();
+        //重复的id不会再次建立节点 含泪删掉，因为速度太慢了
+//        List allIds = new LinkedList();
+//        allIds.clear();
         while (data.processLine(null)) {
+            Map<String, Object> properties = data.getProperties();
+//            if (properties.get("id") == null || properties.get("id") == "" || allIds.contains(properties.get("id"))){
+//                continue;
+//            }
+//            allIds.add(properties.get("id"));
+
             String[] labels = data.getTypeLabels();
             long id;
             if (hasId) {
                 id = data.getId();
-                db.createNode(id, data.getProperties(),labelsFor(labels));
+                db.createNode(id, properties, labelsFor(labels));
             } else {
-                id = db.createNode(data.getProperties(),labelsFor(labels));
+                id = db.createNode(properties, labelsFor(labels));
             }
             for (Map.Entry<String, Map<String, Object>> entry : data.getIndexData().entrySet()) {
                 final BatchInserterIndex index = indexFor(entry.getKey());
@@ -109,11 +118,22 @@ public class Importer {
                 index.add(id, entry.getValue());
             }
             report.dots();
-
             if (report.getCount() % BATCH == 0) flushIndexes();
         }
         flushIndexes();
         report.finishImport("Nodes");
+    }
+
+    private Map<String, Object> trimDataValue(LineData data) {
+        Map<String, Object> properties = data.getProperties();
+        for (Map.Entry<String, Object> entry : properties.entrySet()){
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (value != null ){
+                properties.put(key, value.toString().trim());
+            }
+        }
+        return properties;
     }
 
     private Label[] labelsFor(String[] labels) {
@@ -127,7 +147,14 @@ public class Importer {
     }
 
     private long lookup(String index,String property,Object value) {
-        Long id = indexFor(index).get(property, value).getSingle();
+        Long id = null;
+        try{
+            id = indexFor(index).get(property, value).getSingle();
+        }catch (Exception e){
+            e.printStackTrace();
+            id = null;
+        }
+
         return id==null ? -1 : id;
     }
 
@@ -150,7 +177,14 @@ public class Importer {
                 skipped++;
                 continue;
             }
-            final RelType type = relType.update(data.getRelationshipTypeLabel());
+            RelType type = null;
+            try {
+                type = relType.update(data.getRelationshipTypeLabel());
+            }catch (Exception e){
+                skipped++;
+                continue;
+            }
+
             final long id = db.createRelationship(start, end, type, properties);
             for (Map.Entry<String, Map<String, Object>> entry : data.getIndexData().entrySet()) {
                 indexFor(entry.getKey()).add(id, entry.getValue());
@@ -180,6 +214,9 @@ public class Importer {
         if (header.indexName == null || header.type == Type.ID) {
             return id(value);
         }
+//        System.out.println("indexName: " + header.indexName);
+//        System.out.println("name: " + header.name);
+//        System.out.println("value: " + value);
         return lookup(header.indexName, header.name, value);
     }
 
@@ -225,10 +262,12 @@ public class Importer {
     private void doImport() throws IOException {
         try {
             for (File file : config.getNodesFiles()) {
+                System.out.println("importing node file name : " + file.getName());
                 importNodes(createFileReader(file));
             }
 
             for (File file : config.getRelsFiles()) {
+                System.out.println("importing rel file name : " + file.getName());
                 importRelationships(createFileReader(file));
             }
 
