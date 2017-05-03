@@ -1,6 +1,6 @@
 package org.neo4j.batchimport.importer;
 
-import au.com.bytecode.opencsv.CSVReader;
+import org.neo4j.batchimport.CSVReader;
 
 import java.io.IOException;
 import java.io.Reader;

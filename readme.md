@@ -2,11 +2,16 @@
 
 ## Neo4j 2.2+ neo4j-import tool
 
-针对原始版本修复了导入.gz关系压缩文件时，win环境会出现关系无法导入的情况。
-具体使用步骤可参见本人博客：https://my.oschina.net/u/2538940/blog/883829
+此工具的具体使用步骤可参见本人博客：https://my.oschina.net/u/2538940/blog/883829
 
 直接下载已编译好的工具：
 https://github.com/mo9527/batch-import-tool
+
+与原始版本比较，本版本主要做了以下修改：\
+1、修复了导入.gz关系压缩文件时，win环境会出现关系无法导入的情况。\
+2、增加程序对csv文件的容错性，即使csv文件的某一行出现编码或断行问题，也不会影响接下来数据的\
+导入，前提是每一行数据的字节长度不超过5000。如果超过5000，可自行修改org.neo4j.batchimport.CSVParser\
+文件的第171行。
 
 
 Since version 2.2.0 Neo4j comes with an **high performance import tool** out of the box that takes many ideas of this one, but is way more scalable across CPUs and has little memory requirements.

@@ -167,8 +167,8 @@ public class CSVParser {
      * @return true if something was left over from last call(s)
      */
     public boolean isPending() {
-        //防止csv文件断行出现错误，这里进行适当的介入，当pengding超过2000的长度时，则假定csv的断行出现了问题，防止假死，杜绝吃死内存
-        if (pending != null && pending.length() > 2000){
+        //防止csv文件断行出现错误，这里进行适当的介入，当pengding超过5000的长度时，则假定csv的断行出现了问题，防止假死，杜绝吃死内存
+        if (pending != null && pending.length() > 5000){
             pending = null;
             return false;
         }
